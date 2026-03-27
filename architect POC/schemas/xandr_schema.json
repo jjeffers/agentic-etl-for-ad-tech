@@ -1,0 +1,60 @@
+{
+  "endpoint_url": "https://api.appnexus.com/imf/api/v1/rest/graphql",
+  "http_method": "POST",
+  "mappings": [
+    {
+      "source_api_field": "FOCUS_PRODUCT_ID",
+      "target_reporting_v1_column": "focus_product_id",
+      "data_type": "string",
+      "is_pii_or_ip_address": false
+    },
+    {
+      "source_api_field": "FOCUS_PRODUCT_NAME",
+      "target_reporting_v1_column": "focus_product_name",
+      "data_type": "string",
+      "is_pii_or_ip_address": false
+    },
+    {
+      "source_api_field": "RELATED_PRODUCT_ID",
+      "target_reporting_v1_column": "related_product_id",
+      "data_type": "string",
+      "is_pii_or_ip_address": false
+    },
+    {
+      "source_api_field": "RELATED_PRODUCT_NAME",
+      "target_reporting_v1_column": "related_product_name",
+      "data_type": "string",
+      "is_pii_or_ip_address": false
+    },
+    {
+      "source_api_field": "FOCUS_PRODUCT_CAPACITY",
+      "target_reporting_v1_column": "focus_product_capacity",
+      "data_type": "integer",
+      "is_pii_or_ip_address": false
+    },
+    {
+      "source_api_field": "RELATED_PRODUCT_CAPACITY",
+      "target_reporting_v1_column": "related_product_capacity",
+      "data_type": "integer",
+      "is_pii_or_ip_address": false
+    },
+    {
+      "source_api_field": "OVERLAPPING_CAPACITY",
+      "target_reporting_v1_column": "overlapping_capacity",
+      "data_type": "integer",
+      "is_pii_or_ip_address": false
+    },
+    {
+      "source_api_field": "PERCENT_OVERLAP",
+      "target_reporting_v1_column": "percent_overlap",
+      "data_type": "float",
+      "is_pii_or_ip_address": false
+    },
+    {
+      "source_api_field": "PERCENT_OVERLAP_FOCUS",
+      "target_reporting_v1_column": "percent_overlap_focus",
+      "data_type": "float",
+      "is_pii_or_ip_address": false
+    }
+  ]
+}
