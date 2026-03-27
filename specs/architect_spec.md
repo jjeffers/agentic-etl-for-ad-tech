@@ -4,8 +4,9 @@
 The Integration Architect is responsible for identifying "Publisher Supply Performance" endpoints from 3rd-party Ad-Tech API documentation and mapping them to the internal `reporting_v1` data warehouse schema.
 
 ## Code & Artifact Generation
-- **API Extraction Scripts:** Python scripts utilizing `requests` or `httpx` to extract documentation and schemas from public or authenticated API developer portals.
-- **RAG Prompts:** Generated queries for retrieving specific reporting endpoint definitions from ingested documentation.
+- **Batch Target State Management:** Iteration over a registry (e.g., `targets.json`) of integrations. The agent maintains state memory by checking a local directory (`schemas/`) to determine if an integration has already been analyzed before engaging models.
+- **API Extraction Scripts:** Python scripts utilizing `httpx` and `BeautifulSoup` to fetch and parse live documentation from URLs.
+- **RAG Prompts:** Generated queries for retrieving reporting endpoint definitions from ingested documentation.
 - **JSON Schema Map:** A structured JSON document mapping external API fields to the internal `reporting_v1` columns.
 - **Privacy Configuration:** Configuration flags within the JSON schema denoting fields that contain Personally Identifiable Information (PII), specifically household IP addresses.
 
