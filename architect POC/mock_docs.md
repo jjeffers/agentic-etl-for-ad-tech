@@ -12,5 +12,5 @@ Fetch aggregated reporting for Publisher Yield.
 - `reqs`: (Integer) Count of ad requests.
 - `imps`: (Integer) Count of successful ad impressions.
 - `rev`: (Float) Total publisher revenue in USD.
-- `device_os`: (String) The operating system of the requesting user.
+- `operating_system`: (String) The operating system of the requesting user.
 - `viewer_ip`: (String) The IPv4 address of the end user viewing the advertisement.
