@@ -5,8 +5,8 @@ The Integration Architect is responsible for identifying "Publisher Supply Perfo
 
 ## Code & Artifact Generation
 - **Batch Target State Management:** Iteration over a registry (e.g., `targets.json`) of integrations. The agent maintains state memory by checking a local directory (`schemas/`) to determine if an integration has already been analyzed before engaging models.
-- **API Extraction Scripts:** Python scripts utilizing `httpx` and `BeautifulSoup` to fetch and parse live documentation from URLs.
-- **RAG Prompts:** Generated queries for retrieving reporting endpoint definitions from ingested documentation.
+- **Autonomous Web Crawler:** If an explicit endpoint isn't provided, starting from a root URL, the Architect functions recursively. It extracts on-page text alongside all hyperlinks via `BeautifulSoup` and evaluates them to actively "hunt" and navigate toward Publisher Analytics documentation.
+- **RAG/Routing Prompts:** Queries instructing the LLM to either extract the endpoint schema if found, or confidently route to the best available hyperlink if missing.
 - **JSON Schema Map:** A structured JSON document mapping external API fields to the internal `reporting_v1` columns.
 - **Privacy Configuration:** Configuration flags within the JSON schema denoting fields that contain Personally Identifiable Information (PII), specifically household IP addresses.
 

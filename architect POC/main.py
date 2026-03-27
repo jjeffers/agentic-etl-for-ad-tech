@@ -1,12 +1,12 @@
 import os
 import json
 import httpx
+from urllib.parse import urljoin
 from bs4 import BeautifulSoup
 from dotenv import load_dotenv
-from typing import List
+from typing import List, Optional
 from pydantic import BaseModel, Field
 
-# Using the official gemini sdk
 from google import genai
 from google.genai import types
 
@@ -21,30 +21,12 @@ class APISchemaMap(BaseModel):
     http_method: str
     mappings: List[FieldMapping]
 
-def extract_schema(docs: str) -> APISchemaMap:
-    """Invokes the Gemini Architect to build a JSON Schema Map from docs."""
-    print("Connecting to Gemini...")
-    client = genai.Client() # Loads GEMINI_API_KEY from environment
-    
-    prompt = """You are the Integration Architect. Your job is to extract 'Publisher Supply Performance' reporting endpoints 
-from the provided documentation and map their fields to our internal data warehouse schema (reporting_v1).
-You MUST accurately flag any fields containing IP addresses or similar PII with `is_pii_or_ip_address` = true."""
-    
-    # We use gemini-2.5-flash for accurate JSON structured outputs
-    response = client.models.generate_content(
-        model='gemini-2.5-flash',
-        contents=f"{prompt}\n\nDocumentation text:\n{docs}",
-        config=types.GenerateContentConfig(
-            response_mime_type="application/json",
-            response_schema=APISchemaMap,
-            temperature=0.1
-        ),
-    )
-    
-    if not response.parsed:
-        raise ValueError("Model failed to return parsed JSON according to schema.")
-        
-    return response.parsed
+class DiscoveryState(BaseModel):
+    status: str = Field(description="Must be 'found_endpoint' if the current page contains the schema, 'navigate_to_link' if we need to click a link, or 'failed_missing_docs' if there are no good options.")
+    next_url: Optional[str] = Field(description="The exact absolute URL to navigate to next, ONLY if status is 'navigate_to_link'")
+    schema_map: Optional[APISchemaMap] = Field(description="The final mapped schema, ONLY if status is 'found_endpoint'")
+    confidence_reasoning: str = Field(description="Brief explanation of why you made this routing decision.")
+
 
 def compliance_linter(schema: APISchemaMap):
     """Guardrail: Ensure IP address/PII fields are strictly flagged."""
@@ -57,19 +39,76 @@ def compliance_linter(schema: APISchemaMap):
     
     print("[LINTER PASS] No unflagged PII fields detected.")
 
-def fetch_docs(url_or_path: str) -> str:
+def fetch_docs_and_links(url_or_path: str) -> dict:
     if url_or_path.startswith("http"):
-        print(f"Fetching from {url_or_path}...")
         # Ad-tech documentation urls change frequently; follow 301/302 redirects
         response = httpx.get(url_or_path, follow_redirects=True)
         response.raise_for_status()
+        
         soup = BeautifulSoup(response.text, "html.parser")
-        return soup.get_text(separator="\n", strip=True)[:50000] # Safe token limit
+        text_content = soup.get_text(separator="\n", strip=True)[:40000] # Safe token limit 
+        
+        # Extract links and resolve them to absolute URLs
+        links = []
+        for a in soup.find_all('a', href=True):
+            href = a['href']
+            abs_url = urljoin(str(response.url), href)
+            # Basic deduplication and keep only standard web links
+            if abs_url not in links and abs_url.startswith("http"):
+                links.append(abs_url)
+                
+        return {"text": text_content, "links": links[:100]}
     else:
         if not os.path.exists(url_or_path):
             raise FileNotFoundError(f"Local file {url_or_path} not found.")
         with open(url_or_path, "r") as f:
-            return f.read()
+            return {"text": f.read(), "links": []}
+
+def extract_schema_autonomous(start_url: str, max_depth: int = 4) -> APISchemaMap:
+    """Invokes the Gemini Architect as a recursive web crawler agent."""
+    client = genai.Client()
+    current_url = start_url
+    
+    prompt = """You are an Autonomous Integration Architect. Your goal is to find and map 'Publisher Supply Performance' or yield reporting API endpoints from data sources.
+If the 'Documentation text' contains the actual API schema fields, set status to 'found_endpoint', and populate 'schema_map'. You MUST accurately flag any fields containing IP addresses or similar PII with `is_pii_or_ip_address` = true.
+If the text DOES NOT contain the schema fields, review the provided 'Available Links'. Choose the ONE link that is most likely to lead to the publisher reporting/analytics APIs or developer docs, set status to 'navigate_to_link', and populate 'next_url'."""
+
+    for step in range(max_depth):
+        print(f"\n[Depth {step+1}/{max_depth}] Crawling: {current_url}")
+        page_data = fetch_docs_and_links(current_url)
+        
+        links_str = "\n".join(page_data["links"])
+        contents = f"{prompt}\n\nCurrent URL: {current_url}\nAvailable Links:\n{links_str}\n\nDocumentation text:\n{page_data['text']}"
+        
+        print("Analyzing with Architect LLM...")
+        response = client.models.generate_content(
+            model='gemini-2.5-flash',
+            contents=contents,
+            config=types.GenerateContentConfig(
+                response_mime_type="application/json",
+                response_schema=DiscoveryState,
+                temperature=0.1
+            ),
+        )
+        
+        state: DiscoveryState = response.parsed
+        if not state:
+            raise ValueError("Model failed to return parsed JSON according to DiscoveryState schema.")
+            
+        print(f"-> Reasoning: {state.confidence_reasoning}")
+        print(f"-> Decision: {state.status}")
+        
+        if state.status == "found_endpoint" and state.schema_map:
+            return state.schema_map
+        elif state.status == "navigate_to_link" and state.next_url:
+            current_url = state.next_url
+            continue
+        elif state.status == "failed_missing_docs":
+            raise ValueError("Agent explicitly failed to find documentation on this path.")
+        else:
+            raise ValueError(f"Agent returned invalid state configuration: {state.status}")
+            
+    raise TimeoutError(f"Autonomous extraction exceeded max depth of {max_depth} without finding the schema.")
 
 def main():
     load_dotenv()
@@ -99,12 +138,8 @@ def main():
             continue
 
         try:
-            print(f"Fetching documentation from {url}...")
-            docs = fetch_docs(url)
-            print("Analyzing API Documentation with Architect LLM...")
-            
-            schema_map = extract_schema(docs)
-            print("=== Proposed Schema Map ===")
+            schema_map = extract_schema_autonomous(url)
+            print("\n=== Final Proposed Schema Map ===")
             print(json.dumps(schema_map.model_dump(), indent=2))
             
             print("=== Running Guardrails ===")
