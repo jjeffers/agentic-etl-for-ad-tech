@@ -32,15 +32,12 @@ SentinelData decomposes the workflow into specialized agents to balance cost, sp
 
 ## 2. Agent Specifications (Deep Dive)
 
-### **The Integration Architect**
-* **Task:** Identify "Publisher Supply Performance" endpoints and map to `reporting_v1` warehouse schema.
-* **Constraint:** Must explicitly flag fields containing household IP addresses for hashing to ensure privacy compliance.
-* **Success Criteria:** Production of a JSON Schema Map that passes 100% of data-type validation.
+Detailed standalone specifications for each agent have been generated. They include breakdowns of code to generate, guardrails, costs, and robust verification subsystems for each role:
 
-### **The Observer (The Sentinel)**
-* **Task:** Detect "Semantic Drift" and "Silent Failures."
-* **Detection Logic:** * Trigger alert if `sum(impressions)` drops >20% over 1 hour vs. 7-day rolling average.
-    * Immediate Critical Alert if API returns `200 OK` but `results: []` (Empty Data/API Key Permission Change).
+* [**The Integration Architect**](./specs/architect_spec.md): Identify "Publisher Supply Performance" endpoints and map to `reporting_v1` warehouse schema.
+* [**The Engineer**](./specs/engineer_spec.md): Translate schema maps into executable ETL code and deployment configs.
+* [**The Observer (The Sentinel)**](./specs/observer_spec.md): Perform real-time telemetry analysis to detect "Semantic Drift" and "Silent Failures."
+* [**The Analyst**](./specs/analyst_spec.md): Resolve alerts through Root Cause Triangulation to differentiate between "Machine" and "Market" failures.
 
 ---
 
