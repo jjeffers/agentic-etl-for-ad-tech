@@ -64,7 +64,7 @@ def fetch_docs_and_links(url_or_path: str) -> dict:
         with open(url_or_path, "r") as f:
             return {"text": f.read(), "links": []}
 
-def extract_schema_autonomous(start_url: str, max_depth: int = 4) -> APISchemaMap:
+def extract_schema_autonomous(start_url: str, max_depth: int = 10) -> APISchemaMap:
     """Invokes the Gemini Architect as a recursive web crawler agent."""
     client = genai.Client()
     current_url = start_url
