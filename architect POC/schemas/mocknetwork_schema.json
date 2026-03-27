@@ -1,0 +1,42 @@
+{
+  "endpoint_url": "https://api.adnetworkx.com/v2/yield/publisher",
+  "http_method": "GET",
+  "mappings": [
+    {
+      "source_api_field": "pub_id",
+      "target_reporting_v1_column": "publisher_id",
+      "data_type": "INTEGER",
+      "is_pii_or_ip_address": false
+    },
+    {
+      "source_api_field": "reqs",
+      "target_reporting_v1_column": "requests",
+      "data_type": "INTEGER",
+      "is_pii_or_ip_address": false
+    },
+    {
+      "source_api_field": "imps",
+      "target_reporting_v1_column": "impressions",
+      "data_type": "INTEGER",
+      "is_pii_or_ip_address": false
+    },
+    {
+      "source_api_field": "rev",
+      "target_reporting_v1_column": "revenue_usd",
+      "data_type": "FLOAT",
+      "is_pii_or_ip_address": false
+    },
+    {
+      "source_api_field": "operating_system",
+      "target_reporting_v1_column": "user_operating_system",
+      "data_type": "STRING",
+      "is_pii_or_ip_address": false
+    },
+    {
+      "source_api_field": "viewer_ip",
+      "target_reporting_v1_column": "user_ip_address",
+      "data_type": "STRING",
+      "is_pii_or_ip_address": true
+    }
+  ]
+}
