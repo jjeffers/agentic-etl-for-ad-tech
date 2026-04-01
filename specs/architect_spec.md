@@ -7,7 +7,8 @@ The Integration Architect is responsible for identifying "Publisher Supply Perfo
 - **Batch Target State Management:** Iteration over a registry (e.g., `targets.json`) of integrations. The agent maintains state memory by checking a local directory (`schemas/`) to determine if an integration has already been analyzed before engaging models.
 - **Autonomous Web Crawler:** If an explicit endpoint isn't provided, starting from a root URL, the Architect functions recursively. It extracts on-page text alongside all hyperlinks via `BeautifulSoup` and evaluates them to actively "hunt" and navigate toward Publisher Analytics documentation.
 - **RAG/Routing Prompts:** Queries instructing the LLM to either extract the endpoint schema if found, or confidently route to the best available hyperlink if missing.
-- **JSON Schema Map:** A structured JSON document mapping external API fields to the internal `reporting_v1` columns.
+- **Authentication Telemetry Research:** Beyond just identifying the required authentication mechanism (e.g., OAuth 2.0, API Keys), the Architect must extract actionable Auth Telemetry, including token/key placement (header vs query parameter), required credentials (`client_id`, `developer_token`), Auth Endpoints, and token lifecycles/refresh rules.
+- **JSON Schema Map:** A structured JSON document mapping external API fields to the internal `reporting_v1` columns, alongside an `auth_telemetry` object detailing endpoint URLs, header keys, token lifetimes, and credential requirements.
 - **Privacy Configuration:** Configuration flags within the JSON schema denoting fields that contain Personally Identifiable Information (PII), specifically household IP addresses.
 
 ## Guardrails
@@ -22,5 +23,6 @@ The Integration Architect is responsible for identifying "Publisher Supply Perfo
 
 ## Verification Subsystem
 - **Syntactic Validation:** The JSON Schema Map must pass 100% data-type validation before human review.
+- **Auth Completeness Linter:** An automated check ensuring that if a complex authentication method like "OAuth 2.0" is flagged, the schema map must also include the corresponding token endpoint URLs and required scopes.
 - **Compliance Linter:** An automated static analysis tool that scans the proposed schema mappings for suspected PII fields (regex/keyword matching against `ip`, `address`, `email`, etc.).
 - **Drift Simulation Test:** Unit test feeding the Architect an altered fake API document to ensure it flags a schema update requirement appropriately instead of forcefully mapping unmatched fields.

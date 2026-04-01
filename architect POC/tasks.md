@@ -11,7 +11,7 @@
 
 ## 3. Define the Target Data Contract (Pydantic)
 - [ ] Define the `FieldMapping` Pydantic model (`source_api_field`, `target_reporting_v1_column`, `data_type`, `is_pii_or_ip_address`).
-- [ ] Define the `APISchemaMap` Pydantic model (`endpoint_url`, `http_method`, `mappings`).
+- [ ] Define the `APISchemaMap` Pydantic model (`endpoint_url`, `http_method`, `authentication_method`, `mappings`).
 
 ## 4. Core Agent Logic & Prompt Engineering
 - [ ] Construct the Architect system prompt.

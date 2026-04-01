@@ -1,7 +1,76 @@
 {
   "endpoint_url": "https://api.appnexus.com/imf/api/v1/rest/graphql",
   "http_method": "POST",
+  "authentication_method": "Bearer Tokens",
+  "auth_telemetry": {
+    "auth_endpoints": [
+      "https://learn.microsoft.com/en-us/xandr/yield-analytics-api/api-authentication"
+    ],
+    "placement": "Header: Authorization",
+    "credentials_required": [],
+    "token_lifecycle": "Details on token expiration and refresh rules are not provided on this page, but are expected to be found in the linked authentication documentation."
+  },
   "mappings": [
+    {
+      "source_api_field": "focusProductIds",
+      "target_reporting_v1_column": "focus_product_ids",
+      "data_type": "array_string",
+      "is_pii_or_ip_address": false
+    },
+    {
+      "source_api_field": "focusProductNames",
+      "target_reporting_v1_column": "focus_product_names",
+      "data_type": "array_string",
+      "is_pii_or_ip_address": false
+    },
+    {
+      "source_api_field": "focusProductGroupNames",
+      "target_reporting_v1_column": "focus_product_group_names",
+      "data_type": "string",
+      "is_pii_or_ip_address": false
+    },
+    {
+      "source_api_field": "focusProductIdsOrTargetExpressions",
+      "target_reporting_v1_column": "focus_product_ids_or_target_expressions",
+      "data_type": "string",
+      "is_pii_or_ip_address": false
+    },
+    {
+      "source_api_field": "overlapsToAnalyzeProductIds",
+      "target_reporting_v1_column": "overlaps_to_analyze_product_ids",
+      "data_type": "array_string",
+      "is_pii_or_ip_address": false
+    },
+    {
+      "source_api_field": "overlapsToAnalyzeProductNames",
+      "target_reporting_v1_column": "overlaps_to_analyze_product_names",
+      "data_type": "string",
+      "is_pii_or_ip_address": false
+    },
+    {
+      "source_api_field": "overlapsToAnalyzeProductGroupNames",
+      "target_reporting_v1_column": "overlaps_to_analyze_product_group_names",
+      "data_type": "string",
+      "is_pii_or_ip_address": false
+    },
+    {
+      "source_api_field": "startDate",
+      "target_reporting_v1_column": "start_date",
+      "data_type": "string",
+      "is_pii_or_ip_address": false
+    },
+    {
+      "source_api_field": "endDate",
+      "target_reporting_v1_column": "end_date",
+      "data_type": "string",
+      "is_pii_or_ip_address": false
+    },
+    {
+      "source_api_field": "TargetExpressions",
+      "target_reporting_v1_column": "target_expressions",
+      "data_type": "string",
+      "is_pii_or_ip_address": false
+    },
     {
       "source_api_field": "FOCUS_PRODUCT_ID",
       "target_reporting_v1_column": "focus_product_id",

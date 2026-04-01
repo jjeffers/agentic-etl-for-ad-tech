@@ -16,9 +16,17 @@ class FieldMapping(BaseModel):
     data_type: str
     is_pii_or_ip_address: bool = Field(description="MUST be true if the field contains household IPs, addresses, or other personal data.")
 
+class AuthTelemetry(BaseModel):
+    auth_endpoints: Optional[List[str]] = Field(description="List of URLs used for token exchange, refresh, or login.")
+    placement: str = Field(description="Where the token/key belongs (e.g., 'Header: Authorization', 'Query: api_key').")
+    credentials_required: List[str] = Field(description="Specific parameter names required (e.g., ['client_id', 'client_secret']).")
+    token_lifecycle: str = Field(description="Description of token expiration periods and refresh rules.")
+
 class APISchemaMap(BaseModel):
     endpoint_url: str
     http_method: str
+    authentication_method: str = Field(description="The required authentication mechanism (e.g., OAuth 2.0, API Keys, Bearer Tokens).")
+    auth_telemetry: Optional[AuthTelemetry] = Field(description="Detailed telemetry about the authentication, required if authentication is needed.")
     mappings: List[FieldMapping]
 
 class DiscoveryState(BaseModel):
@@ -38,6 +46,21 @@ def compliance_linter(schema: APISchemaMap):
                 raise ValueError(f"Compliance Linter Error: Field '{mapping.source_api_field}' looks like potential PII but is NOT flagged for hashing!")
     
     print("[LINTER PASS] No unflagged PII fields detected.")
+
+def auth_completeness_linter(schema: APISchemaMap):
+    """Guardrail: Ensure Auth Telemetry is complete if a complex method is flagged."""
+    if schema.authentication_method and schema.authentication_method.lower() not in ["none", "no auth", "unauthenticated", "none required", ""]:
+        if not schema.auth_telemetry:
+            raise ValueError(f"Auth Completeness Linter Error: Authentication method '{schema.authentication_method}' was identified, but 'auth_telemetry' is missing!")
+        
+        auth_lower = schema.authentication_method.lower()
+        if "oauth" in auth_lower:
+            if not schema.auth_telemetry.auth_endpoints:
+                raise ValueError("Auth Completeness Linter Error: OAuth detected, but no token exchange 'auth_endpoints' were identified.")
+            if not schema.auth_telemetry.credentials_required:
+                raise ValueError("Auth Completeness Linter Error: OAuth detected, but no 'credentials_required' (e.g. client_id) were identified.")
+    
+    print("[LINTER PASS] Auth Telemetry validation passed.")
 
 def fetch_docs_and_links(url_or_path: str) -> dict:
     if url_or_path.startswith("http"):
@@ -70,7 +93,7 @@ def extract_schema_autonomous(start_url: str, max_depth: int = 10) -> APISchemaM
     current_url = start_url
     
     prompt = """You are an Autonomous Integration Architect. Your goal is to find and map 'Publisher Supply Performance' or yield reporting API endpoints from data sources.
-If the 'Documentation text' contains the actual API schema fields, set status to 'found_endpoint', and populate 'schema_map'. You MUST accurately flag any fields containing IP addresses or similar PII with `is_pii_or_ip_address` = true.
+If the 'Documentation text' contains the actual API schema fields, set status to 'found_endpoint', and populate 'schema_map'. You MUST accurately flag any fields containing IP addresses or similar PII with `is_pii_or_ip_address` = true. You MUST also identify the required authentication mechanism, output it in the `authentication_method` field, and populate the detailed `auth_telemetry` object.
 If the text DOES NOT contain the schema fields, review the provided 'Available Links'. Choose the ONE link that is most likely to lead to the publisher reporting/analytics APIs or developer docs, set status to 'navigate_to_link', and populate 'next_url'."""
 
     for step in range(max_depth):
@@ -144,6 +167,7 @@ def main():
             
             print("=== Running Guardrails ===")
             compliance_linter(schema_map)
+            auth_completeness_linter(schema_map)
             
             with open(schema_path, "w") as out:
                 json.dump(schema_map.model_dump(), out, indent=2)

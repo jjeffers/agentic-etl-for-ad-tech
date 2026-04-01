@@ -1,41 +1,50 @@
 {
   "endpoint_url": "https://api.adnetworkx.com/v2/yield/publisher",
   "http_method": "GET",
+  "authentication_method": "API Key",
+  "auth_telemetry": {
+    "auth_endpoints": null,
+    "placement": "Header: X-API-Key",
+    "credentials_required": [
+      "api_key"
+    ],
+    "token_lifecycle": "API key does not expire unless revoked."
+  },
   "mappings": [
     {
       "source_api_field": "pub_id",
       "target_reporting_v1_column": "publisher_id",
-      "data_type": "INTEGER",
+      "data_type": "Integer",
       "is_pii_or_ip_address": false
     },
     {
       "source_api_field": "reqs",
       "target_reporting_v1_column": "requests",
-      "data_type": "INTEGER",
+      "data_type": "Integer",
       "is_pii_or_ip_address": false
     },
     {
       "source_api_field": "imps",
       "target_reporting_v1_column": "impressions",
-      "data_type": "INTEGER",
+      "data_type": "Integer",
       "is_pii_or_ip_address": false
     },
     {
       "source_api_field": "rev",
       "target_reporting_v1_column": "revenue_usd",
-      "data_type": "FLOAT",
+      "data_type": "Float",
       "is_pii_or_ip_address": false
     },
     {
       "source_api_field": "operating_system",
-      "target_reporting_v1_column": "user_operating_system",
-      "data_type": "STRING",
+      "target_reporting_v1_column": "operating_system",
+      "data_type": "String",
       "is_pii_or_ip_address": false
     },
     {
       "source_api_field": "viewer_ip",
-      "target_reporting_v1_column": "user_ip_address",
-      "data_type": "STRING",
+      "target_reporting_v1_column": "viewer_ip_address",
+      "data_type": "String",
       "is_pii_or_ip_address": true
     }
   ]
